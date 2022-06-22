@@ -68,7 +68,14 @@ describe('metas permissions queries', () => {
         const q = DemarchesTypes.query()
         demarchesTypesQueryModify(
           q,
-          { role: 'admin', administrationId },
+          {
+            role: 'admin',
+            administrationId,
+            id: idGenerate(),
+            email: '',
+            nom: '',
+            prenom: ''
+          },
           { titreId }
         )
 

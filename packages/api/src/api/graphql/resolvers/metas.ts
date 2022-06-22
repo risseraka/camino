@@ -1,9 +1,9 @@
 import { GraphQLResolveInfo } from 'graphql'
 import {
+  Context,
   IDocumentRepertoire,
   IEtapeType,
-  IFields,
-  IToken
+  IFields
 } from '../../../types'
 
 import {
@@ -16,8 +16,6 @@ import {
   titresTypesTypesGet
 } from '../../../database/queries/metas'
 
-import { userGet } from '../../../database/queries/utilisateurs'
-
 import { fieldsBuild } from './_fields-build'
 import { etapeTypeIsValidCheck } from '../../_format/etapes-types'
 import { titreDemarcheGet } from '../../../database/queries/titres-demarches'
@@ -29,7 +27,7 @@ import {
 import { userSuper } from '../../../database/user-super'
 import { sortedAdministrationTypes } from 'camino-common/src/static/administrations'
 import { sortedGeoSystemes } from 'camino-common/src/static/geoSystemes'
-
+import { User } from 'camino-common/src/roles'
 import { UNITES } from 'camino-common/src/static/unites'
 import { titreEtapesSortAscByOrdre } from '../../../business/utils/titre-etapes-sort'
 import TitresDemarches from '../../../database/models/titres-demarches'
@@ -72,11 +70,10 @@ export const referencesTypes = () => sortedReferencesTypes
 
 export const domaines = async (
   _: never,
-  context: IToken,
+  { user }: Context,
   info: GraphQLResolveInfo
 ) => {
   try {
-    const user = await userGet(context.user?.id)
     const fields = fieldsBuild(info)
 
     return await domainesGet(null as never, { fields }, user)
@@ -101,11 +98,10 @@ export const statuts = () => sortedTitresStatuts
 
 export const demarchesTypes = async (
   { titreId, travaux }: { titreId?: string; travaux?: boolean },
-  context: IToken,
+  { user }: Context,
   info: GraphQLResolveInfo
 ) => {
   try {
-    const user = await userGet(context.user?.id)
     const fields = fieldsBuild(info)
 
     return await demarchesTypesGet({ titreId, travaux }, { fields }, user)
@@ -174,10 +170,8 @@ const demarcheEtapesTypesGet = async (
     date
   }: { titreDemarcheId: string; date: string; titreEtapeId?: string },
   { fields }: { fields: IFields },
-  userId?: string
+  user: User
 ) => {
-  const user = await userGet(userId)
-
   const titreDemarche = await titreDemarcheGet(
     titreDemarcheId,
     {
@@ -273,11 +267,10 @@ export const etapesTypes = async (
     date?: string
     travaux?: boolean
   },
-  context: IToken,
+  { user }: Context,
   info: GraphQLResolveInfo
 ) => {
   try {
-    const user = await userGet(context.user?.id)
     const fields = fieldsBuild(info)
 
     // si création ou édition d'une étape de démarche
@@ -290,7 +283,7 @@ export const etapesTypes = async (
       return demarcheEtapesTypesGet(
         { titreDemarcheId, date, titreEtapeId },
         { fields },
-        context.user?.id
+        user
       )
     }
 

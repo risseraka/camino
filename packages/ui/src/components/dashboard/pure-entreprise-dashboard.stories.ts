@@ -2,7 +2,7 @@ import PureEntrepriseDashboard from './pure-entreprise-dashboard.vue'
 import { Meta, Story } from '@storybook/vue3'
 import { TitreEntreprise } from '@/components/titres/table-utils'
 import { DEPARTEMENT_IDS } from 'camino-common/src/static/departement'
-import { User } from 'camino-common/src/roles'
+import { UserNotNull } from 'camino-common/src/roles'
 
 const meta: Meta = {
   title: 'Components/PureEntrepriseDashboard',
@@ -17,7 +17,7 @@ export default meta
 type Props = {
   getEntreprisesTitres: () => Promise<TitreEntreprise[]>
   displayActivites: boolean
-  user: User
+  user: Pick<UserNotNull, 'role'>
   entrepriseId: string
 }
 
@@ -115,7 +115,7 @@ const Template: Story<Props> = (args: Props) => ({
 export const Ok = Template.bind({})
 Ok.args = {
   getEntreprisesTitres: () => Promise.resolve(titres),
-  user: { role: 'super', administrationId: undefined },
+  user: { role: 'super' },
   entrepriseId: '1234',
   displayActivites: true
 }
@@ -165,7 +165,7 @@ OkWithoutFiscalite.args = {
         ]
       }
     ]),
-  user: { role: 'super', administrationId: undefined },
+  user: { role: 'super' },
   entrepriseId: '1234',
   displayActivites: true
 }
@@ -173,21 +173,21 @@ OkWithoutFiscalite.args = {
 export const OkWithoutActivities = Template.bind({})
 OkWithoutActivities.args = {
   getEntreprisesTitres: () => Promise.resolve(titres),
-  user: { role: 'super', administrationId: undefined },
+  user: { role: 'super' },
   entrepriseId: '1234',
   displayActivites: false
 }
 export const Loading = Template.bind({})
 Loading.args = {
   getEntreprisesTitres: () => new Promise<TitreEntreprise[]>(resolve => {}),
-  user: { role: 'super', administrationId: undefined },
+  user: { role: 'super' },
   entrepriseId: '1234',
   displayActivites: true
 }
 export const WithError = Template.bind({})
 WithError.args = {
   getEntreprisesTitres: () => Promise.reject(new Error('because reasons')),
-  user: { role: 'super', administrationId: undefined },
+  user: { role: 'super' },
   entrepriseId: '1234',
   displayActivites: true
 }

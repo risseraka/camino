@@ -12,7 +12,7 @@
     :initialized="initialized"
     @params-update="paramsUpdate"
   >
-    <template v-if="user.utilisateursCreation" #addButton>
+    <template v-if="canCreateUser" #addButton>
       <button
         class="btn small rnd-xs py-s px-m full-x flex mb-s"
         @click="addPopupOpen"
@@ -43,6 +43,7 @@ import {
   utilisateursLignesBuild
 } from './utilisateurs/table'
 import Icon from './_ui/icon.vue'
+import { canCreateUtilisateur } from 'camino-common/src/permissions/utilisateurs'
 
 export default {
   name: 'Utilisateurs',
@@ -60,6 +61,10 @@ export default {
   computed: {
     user() {
       return this.$store.state.user.element
+    },
+
+    canCreateUser() {
+      return canCreateUtilisateur(this.user)
     },
 
     utilisateurs() {

@@ -19,7 +19,8 @@ import {
   ADMINISTRATION_IDS,
   AdministrationId
 } from 'camino-common/src/static/administrations'
-import { Role } from 'camino-common/src/roles'
+import { AdministrationRole } from 'camino-common/src/roles'
+import { testBlankUser, TestUser } from '../../../../tests/_utils'
 
 console.info = jest.fn()
 console.error = jest.fn()
@@ -304,6 +305,10 @@ describe('titresQueryModify', () => {
 
         const q = Titres.query()
         titresTravauxCreationQuery(q, {
+          email: '',
+          id: '',
+          nom: '',
+          prenom: '',
           role: 'admin',
           administrationId
         })
@@ -333,8 +338,13 @@ describe('titresQueryModify', () => {
 
         const q = Titres.query()
         titresTravauxCreationQuery(q, {
-          role,
-          administrationId: undefined
+          administrationId: undefined,
+          email: '',
+          entreprises: [],
+          id: '',
+          nom: '',
+          prenom: '',
+          role
         })
 
         const titre = (await q.first()) as ITitre
@@ -352,7 +362,13 @@ describe('titresQueryModify', () => {
       ${'lecteur'} | ${false}
     `(
       'un utilisateur $role d’une administration gestionnaire peut modifier un titre',
-      async ({ role, modification }: { role: Role; modification: boolean }) => {
+      async ({
+        role,
+        modification
+      }: {
+        role: AdministrationRole
+        modification: boolean
+      }) => {
         await Titres.query().insert({
           nom: idGenerate(),
           titreStatutId: 'val',
@@ -374,6 +390,10 @@ describe('titresQueryModify', () => {
         q.select(
           titresModificationSelectQuery(q, {
             role,
+            email: '',
+            id: '',
+            nom: '',
+            prenom: '',
             administrationId
           }).as('modification')
         )
@@ -400,6 +420,10 @@ describe('titresQueryModify', () => {
       const q = Titres.query()
       q.select(
         titresModificationSelectQuery(q, {
+          email: '',
+          id: '',
+          nom: '',
+          prenom: '',
           role: 'admin',
           administrationId
         }).as('modification')
@@ -410,15 +434,14 @@ describe('titresQueryModify', () => {
       expect(titre?.modification).toBeFalsy()
     })
 
-    test.each`
-      role            | modification
-      ${'super'}      | ${true}
-      ${'lecteur'}    | ${false}
-      ${'entreprise'} | ${false}
-      ${'default'}    | ${false}
-    `(
+    test.each<[TestUser, boolean]>([
+      [userSuper, true],
+      [{ role: 'entreprise', entreprises: [] }, false],
+      [{ role: 'lecteur', administrationId: 'dea-guyane-01' }, false],
+      [{ role: 'defaut' }, false]
+    ])(
       'Vérifie si un profil $role peut modifier un titre',
-      async ({ role, modification }: { role: Role; modification: boolean }) => {
+      async (user, modification) => {
         await Titres.query().insert({
           nom: idGenerate(),
           titreStatutId: 'val',
@@ -427,10 +450,9 @@ describe('titresQueryModify', () => {
         })
         const q = Titres.query()
         q.select(
-          titresModificationSelectQuery(q, {
-            role,
-            administrationId: undefined
-          }).as('modification')
+          titresModificationSelectQuery(q, { ...user, ...testBlankUser }).as(
+            'modification'
+          )
         )
 
         const titre = await q.first()

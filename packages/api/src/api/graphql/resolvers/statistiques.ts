@@ -1,4 +1,4 @@
-import { ITitre } from '../../../types'
+import { formatUser, ITitre } from '../../../types'
 
 import { titreEtapePropFind } from '../../../business/rules/titre-etape-prop-find'
 import { titreValideCheck } from '../../../business/utils/titre-valide-check'
@@ -10,7 +10,10 @@ import {
   StatistiquesUtilisateurs
 } from 'camino-common/src/statistiques'
 import Utilisateurs from '../../../database/models/utilisateurs'
-import { isAdministration } from 'camino-common/src/roles'
+import {
+  isAdministration,
+  isEntrepriseOrBureauDetudeRole
+} from 'camino-common/src/roles'
 import { Administrations } from 'camino-common/src/static/administrations'
 
 const ACTIVITE_ANNEE_DEBUT = 2018
@@ -56,16 +59,16 @@ const statistiquesGlobales = async (): Promise<Statistiques> => {
       entreprises: {}
     })
 
-    const utilisateurs: StatistiquesUtilisateurs =
-      utilisateursInDb.reduce<StatistiquesUtilisateurs>(
+    const utilisateurs: StatistiquesUtilisateurs = utilisateursInDb
+      .map(formatUser)
+      .reduce<StatistiquesUtilisateurs>(
         (previousValue, user) => {
           if (user.email) {
-            // TODO 2022-05-16: restreindre le fait qu'un utilisateur ayant une administration ne PEUT PAS avoir d'entreprise
             if (isAdministration(user)) {
               previousValue.rattachesAUnTypeDAdministration[
                 Administrations[user.administrationId].typeId
               ]++
-            } else if (user.entreprises?.length) {
+            } else if (isEntrepriseOrBureauDetudeRole(user.role)) {
               previousValue.rattachesAUneEntreprise++
             } else {
               previousValue.visiteursAuthentifies++

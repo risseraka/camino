@@ -1,10 +1,10 @@
 import { GraphQLResolveInfo } from 'graphql'
 
 import {
-  IToken,
   ITitreDemarche,
   ITitreEtapeFiltre,
-  ITitreDemarcheColonneId
+  ITitreDemarcheColonneId,
+  Context
 } from '../../../types'
 
 import { fieldsBuild } from './_fields-build'
@@ -26,17 +26,15 @@ import { titreGet } from '../../../database/queries/titres'
 
 import titreDemarcheUpdateTask from '../../../business/titre-demarche-update'
 import { titreDemarcheUpdationValidate } from '../../../business/validations/titre-demarche-updation-validate'
-import { userGet } from '../../../database/queries/utilisateurs'
 import { demarcheTypeGet } from '../../../database/queries/metas'
 
 const demarche = async (
   { id }: { id: string },
-  context: IToken,
+  { user }: Context,
   info: GraphQLResolveInfo
 ) => {
   try {
     const fields = fieldsBuild(info)
-    const user = await userGet(context.user?.id)
 
     const titreDemarche = await titreDemarcheGet(id, { fields }, user)
 
@@ -90,7 +88,7 @@ const demarches = async (
     titresTerritoires?: string | null
     travaux?: boolean | null
   },
-  context: IToken,
+  { user }: Context,
   info: GraphQLResolveInfo
 ) => {
   try {
@@ -103,8 +101,6 @@ const demarches = async (
     if (!page) {
       page = 1
     }
-
-    const user = await userGet(context.user?.id)
 
     const [titresDemarches, total] = await Promise.all([
       titresDemarchesGet(
@@ -172,12 +168,10 @@ const demarches = async (
 
 const demarcheCreer = async (
   { demarche }: { demarche: ITitreDemarche },
-  context: IToken,
+  { user }: Context,
   info: GraphQLResolveInfo
 ) => {
   try {
-    const user = await userGet(context.user?.id)
-
     const titre = await titreGet(demarche.titreId, { fields: {} }, user)
 
     if (!titre) throw new Error("le titre n'existe pas")
@@ -213,12 +207,10 @@ const demarcheCreer = async (
 
 const demarcheModifier = async (
   { demarche }: { demarche: ITitreDemarche },
-  context: IToken,
+  { user }: Context,
   info: GraphQLResolveInfo
 ) => {
   try {
-    const user = await userGet(context.user?.id)
-
     if (!user) throw new Error('droits insuffisants')
 
     const demarcheOld = await titreDemarcheGet(
@@ -265,12 +257,10 @@ const demarcheModifier = async (
 
 const demarcheSupprimer = async (
   { id }: { id: string },
-  context: IToken,
+  { user }: Context,
   info: GraphQLResolveInfo
 ) => {
   try {
-    const user = await userGet(context.user?.id)
-
     const demarcheOld = await titreDemarcheGet(
       id,
       { fields: { etapes: { id: {} } } },

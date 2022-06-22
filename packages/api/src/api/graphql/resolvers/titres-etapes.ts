@@ -1,6 +1,7 @@
 import { GraphQLResolveInfo } from 'graphql'
 
 import {
+  Context,
   IContenu,
   IDecisionAnnexeContenu,
   IDocument,
@@ -8,9 +9,7 @@ import {
   ISDOMZone,
   ISectionElement,
   ITitreEtape,
-  ITitrePoint,
-  IToken,
-  IUtilisateur
+  ITitrePoint
 } from '../../../types'
 
 import { titreFormat } from '../../_format/titres'
@@ -43,7 +42,6 @@ import {
   titreTypeDemarcheTypeEtapeTypeGet
 } from '../../../database/queries/metas'
 import { userSuper } from '../../../database/user-super'
-import { userGet } from '../../../database/queries/utilisateurs'
 import { documentsLier } from './documents'
 import {
   documentsTypesFormat,
@@ -69,17 +67,17 @@ import { geojsonFeatureMultiPolygon } from '../../../tools/geojson'
 import { idGenerate } from '../../../database/models/_format/id-create'
 import fileRename from '../../../tools/file-rename'
 import { documentFilePathFind } from '../../../tools/documents/document-path-find'
-import { isBureauDEtudes, isEntreprise } from 'camino-common/src/roles'
 import { EtapeStatutId } from 'camino-common/src/static/etapesStatuts'
 import { isEtapeTypeId } from 'camino-common/src/static/etapesTypes'
 import { Feature } from '@turf/helpers'
 import { isNotNullNorUndefined } from 'camino-common/src/typescript-tools'
 import { getDocuments } from 'camino-common/src/static/titresTypes_demarchesTypes_etapesTypes'
 import { getTitreTypeType } from 'camino-common/src/static/titresTypes'
+import { isBureauDEtudes, isEntreprise, User } from 'camino-common/src/roles'
 
 const statutIdAndDateGet = (
   etape: ITitreEtape,
-  user: IUtilisateur,
+  user: User,
   depose = false
 ): { date: string; statutId: EtapeStatutId } => {
   const result = { date: etape.date, statutId: etape.statutId }
@@ -102,12 +100,10 @@ const statutIdAndDateGet = (
 
 const etape = async (
   { id }: { id: string },
-  context: IToken,
+  { user }: Context,
   info: GraphQLResolveInfo
 ) => {
   try {
-    const user = await userGet(context.user?.id)
-
     const fields = fieldsBuild(info)
 
     if (!fields.type) {
@@ -150,11 +146,9 @@ const etapeHeritage = async (
     titreDemarcheId,
     typeId
   }: { date: string; titreDemarcheId: string; typeId: string },
-  context: IToken
+  { user }: Context
 ) => {
   try {
-    const user = await userGet(context.user?.id)
-
     let titreDemarche = await titreDemarcheGet(
       titreDemarcheId,
       { fields: {} },
@@ -243,12 +237,10 @@ const specifiquesGet = async (
 
 const etapeCreer = async (
   { etape }: { etape: ITitreEtape },
-  context: IToken,
+  { user }: Context,
   info: GraphQLResolveInfo
 ) => {
   try {
-    const user = await userGet(context.user?.id)
-
     if (!user) {
       throw new Error("la démarche n'existe pas")
     }
@@ -378,7 +370,7 @@ const etapeCreer = async (
 
     await contenuElementFilesCreate(newFiles, 'demarches', etapeUpdated.id)
 
-    await documentsLier(context, documentIds, etapeUpdated.id, 'titreEtapeId')
+    await documentsLier({ user }, documentIds, etapeUpdated.id, 'titreEtapeId')
 
     try {
       await titreEtapeUpdateTask(
@@ -417,12 +409,10 @@ const etapeCreer = async (
 
 const etapeModifier = async (
   { etape }: { etape: ITitreEtape },
-  context: IToken,
+  { user }: Context,
   info: GraphQLResolveInfo
 ) => {
   try {
-    const user = await userGet(context.user?.id)
-
     if (!user) {
       throw new Error("l'étape n'existe pas")
     }
@@ -543,7 +533,7 @@ const etapeModifier = async (
       etape.points = titreEtapePoints
     }
     await documentsLier(
-      context,
+      { user },
       documentIds,
       etape.id,
       'titreEtapeId',
@@ -637,12 +627,10 @@ const etapeModifier = async (
 
 const etapeDeposer = async (
   { id }: { id: string },
-  context: IToken,
+  { user }: Context,
   info: GraphQLResolveInfo
 ) => {
   try {
-    const user = await userGet(context.user?.id)
-
     if (!user) {
       throw new Error("l'étape n'existe pas")
     }
@@ -803,12 +791,11 @@ const etapeDeposer = async (
 
 const etapeSupprimer = async (
   { id }: { id: string },
-  context: IToken,
+  { user }: Context,
   info: GraphQLResolveInfo
 ) => {
   try {
     const fields = fieldsBuild(info)
-    const user = await userGet(context.user?.id)
 
     if (!user) {
       throw new Error("l'étape n'existe pas")

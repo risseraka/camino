@@ -22,6 +22,16 @@
     group: users
     backup: True
   become: True
+# A Synchroniser avec docker-compose
+- name: Installe le jar keycloak france connect
+  ansible.builtin.get_url:
+    url: https://github.com/InseeFr/Keycloak-FranceConnect/releases/download/4.1.0/keycloak-franceconnect-4.1.0.jar
+    checksum: sha256:34b16b497d9e2904fafc5c4137efea43649c7da10755d28f9910440b5e8fc237
+    dest: /srv/www/camino/keycloak-franceconnect-4.1.0.jar
+    mode: u=rwx,g=rw,o=r
+    owner: git
+    group: users
+  become: True
 - name: Daily
   block:
     - name: Ajoute le script pour pouvoir lancer le daily

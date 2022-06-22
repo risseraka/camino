@@ -7,14 +7,7 @@ import user from './user'
 import tiles from '../utils/map-tiles'
 
 jest.mock('../api/utilisateurs', () => ({
-  utilisateurConnecter: jest.fn(),
-  utilisateurDeconnecter: jest.fn(),
-  utilisateurCerbereUrlObtenir: jest.fn(),
-  utilisateurCerbereTokenCreer: jest.fn(),
   moi: jest.fn(),
-  utilisateurMotDePasseInitialiser: jest.fn(),
-  utilisateurMotDePasseMessageEnvoyer: jest.fn(),
-  utilisateurCreationMessageEnvoyer: jest.fn(),
   utilisateurCreer: jest.fn(),
   userMetas: jest.fn()
 }))
@@ -30,13 +23,9 @@ describe("état de l'utilisateur connecté", () => {
   let userInfo
   let map
   let email
-  let motDePasse
-  let ticket
 
   beforeEach(() => {
     email = 'rene@la.taupe'
-    motDePasse = 'mignon'
-    ticket = 'ti-cket'
 
     userInfo = {
       id: 66,
@@ -135,136 +124,7 @@ describe("état de l'utilisateur connecté", () => {
     expect(apiMock).toHaveBeenCalled()
   })
 
-  test("retourne une erreur de l'api lors de l'obtention de l'utilisateur", async () => {
-    const apiMock = api.moi.mockRejectedValue(new Error("erreur dans l'api"))
-    store.commit('user/set', userInfo)
-    await store.dispatch('user/identify', { email, motDePasse })
-
-    expect(apiMock).toHaveBeenCalled()
-    expect(store.state.user.element).toBeNull()
-  })
-
-  test('connecte un utilisateur', async () => {
-    const apiMock = api.utilisateurConnecter.mockResolvedValue(userInfo)
-
-    await store.dispatch('user/login', { email, motDePasse })
-
-    expect(apiMock).toHaveBeenCalledWith({ email, motDePasse })
-    expect(mutations.popupClose).toHaveBeenCalled()
-    expect(actions.messageAdd).toHaveBeenCalled()
-    expect(store.state.user.element).toEqual({
-      id: 66,
-      prenom: 'rene',
-      nom: 'lataupe',
-      email: 'rene@la.taupe',
-      role: 'admin',
-      entreprise: 'macdo'
-    })
-  })
-
-  test("retourne une erreur de l'api lors de la connection d'un utilisateur", async () => {
-    store.commit('user/set', userInfo)
-    const apiMock = api.utilisateurConnecter.mockRejectedValue(
-      new Error("erreur dans l'api")
-    )
-    await store.dispatch('user/login', { email, motDePasse })
-
-    expect(apiMock).toHaveBeenCalledWith({ email, motDePasse })
-    expect(store.state.user.element).toBeNull()
-    expect(mutations.popupMessageAdd).toHaveBeenCalled()
-  })
-
-  test("obtient l'url de login Cerbère", async () => {
-    const url = encodeURIComponent('http://camino.test')
-    const returnUrl = `https://url-cerbere.tld/login?TARGET=${url}`
-
-    const apiMock =
-      api.utilisateurCerbereUrlObtenir.mockResolvedValue(returnUrl)
-
-    const cerbereUrl = await store.dispatch('user/cerbereUrlGet', url)
-
-    expect(apiMock).toHaveBeenCalledWith({ url })
-
-    expect(cerbereUrl).toBe(returnUrl)
-  })
-
-  test("retourne une erreur de l'api lors de l'obtention de l'url Cerbère", async () => {
-    const url = 'http://camino.test'
-    const apiMock = api.utilisateurCerbereUrlObtenir.mockRejectedValue(
-      new Error("erreur dans l'api")
-    )
-
-    await store.dispatch('user/cerbereUrlGet', url)
-
-    expect(apiMock).toHaveBeenCalledWith({ url })
-    expect(mutations.popupMessageAdd).toHaveBeenCalled()
-  })
-
-  test('connecte un utilisateur avec Cerbère', async () => {
-    const apiMock = api.utilisateurCerbereTokenCreer.mockResolvedValue(userInfo)
-
-    await store.dispatch('user/cerbereLogin', { ticket })
-
-    expect(apiMock).toHaveBeenCalledWith({ ticket })
-    expect(actions.messageAdd).toHaveBeenCalled()
-    expect(store.state.user.element).toEqual({
-      id: 66,
-      prenom: 'rene',
-      nom: 'lataupe',
-      email: 'rene@la.taupe',
-      role: 'admin',
-      entreprise: 'macdo'
-    })
-  })
-
-  test("retourne une erreur de l'api lors de la connection d'un utilisateur avec Cerbère", async () => {
-    store.commit('user/set', userInfo)
-    const apiMock = api.utilisateurCerbereTokenCreer.mockRejectedValue(
-      new Error("erreur dans l'api")
-    )
-
-    await store.dispatch('user/cerbereLogin', { ticket })
-
-    expect(apiMock).toHaveBeenCalledWith({ ticket })
-    expect(store.state.user.element).toBeNull()
-  })
-
-  test('déconnecte un utilisateur', async () => {
-    const apiMock = api.utilisateurDeconnecter.mockResolvedValue()
-
-    store.commit('user/set', userInfo)
-    await store.dispatch('user/logout')
-
-    expect(apiMock).toHaveBeenCalled()
-    expect(mutations.menuClose).toHaveBeenCalled()
-    expect(actions.messageAdd).toHaveBeenCalled()
-    expect(store.state.user.element).toBeNull()
-  })
-
-  test('ajoute un email', async () => {
-    const apiMock =
-      api.utilisateurCreationMessageEnvoyer.mockResolvedValue(email)
-    await store.dispatch('user/addEmail', email)
-
-    expect(apiMock).toHaveBeenCalledWith({ email })
-    expect(mutations.popupClose).toHaveBeenCalled()
-    expect(actions.messageAdd).toHaveBeenCalled()
-  })
-
-  test("retourne une erreur de l'api lors de l'ajout d'un email", async () => {
-    const apiMock = api.utilisateurCreationMessageEnvoyer.mockRejectedValue(
-      new Error("erreur dans l'api")
-    )
-    await store.dispatch('user/addEmail', email)
-
-    expect(apiMock).toHaveBeenCalledWith({ email })
-    expect(mutations.popupClose).not.toHaveBeenCalled()
-    expect(mutations.popupMessageAdd).toHaveBeenCalled()
-  })
-
   test('ajoute un utilisateur', async () => {
-    const loginMock = jest.fn()
-    user.actions.login = loginMock
     store = createStore({ modules: { user, map }, actions, mutations })
     const apiMock = api.utilisateurCreer.mockResolvedValue(userInfo)
     await store.dispatch('user/add', { utilisateur: userInfo, token: 'token' })
@@ -274,7 +134,6 @@ describe("état de l'utilisateur connecté", () => {
       token: 'token'
     })
     expect(actions.messageAdd).toHaveBeenCalled()
-    expect(loginMock).toHaveBeenCalled()
   })
 
   test("n'ajoute pas d'utilisateur", async () => {
@@ -289,8 +148,6 @@ describe("état de l'utilisateur connecté", () => {
   })
 
   test("retourne une erreur api lors de l'ajout d'un utilisateur", async () => {
-    const loginMock = jest.fn()
-    user.actions.login = loginMock
     store = createStore({ modules: { user, map }, actions, mutations })
     const apiMock = api.utilisateurCreer.mockRejectedValue(
       new Error("erreur dans l'api")
@@ -302,65 +159,6 @@ describe("état de l'utilisateur connecté", () => {
       token: 'token'
     })
     expect(actions.messageAdd).toHaveBeenCalled()
-    expect(loginMock).not.toHaveBeenCalled()
-  })
-
-  test("crée l'email d'un utilisateur", async () => {
-    const apiMock =
-      api.utilisateurMotDePasseMessageEnvoyer.mockResolvedValue(userInfo)
-    await store.dispatch('user/passwordInitEmail', email)
-
-    expect(apiMock).toHaveBeenCalledWith({ email })
-    expect(mutations.popupClose).toHaveBeenCalled()
-    expect(actions.messageAdd).toHaveBeenCalled()
-  })
-
-  test("retourne une erreur api dans la création de l'email de l'utilisateur", async () => {
-    const apiMock = api.utilisateurMotDePasseMessageEnvoyer.mockRejectedValue(
-      new Error("erreur dans l'api")
-    )
-    await store.dispatch('user/passwordInitEmail', email)
-
-    expect(apiMock).toHaveBeenCalledWith({ email })
-    expect(mutations.popupMessageAdd).toHaveBeenCalled()
-    expect(actions.messageAdd).not.toHaveBeenCalled()
-  })
-
-  test("initialise le mot de passe d'un utilisateur", async () => {
-    store = createStore({ modules: { user, map }, actions, mutations })
-    const apiMock =
-      api.utilisateurMotDePasseInitialiser.mockResolvedValue(userInfo)
-    await store.dispatch('user/passwordInit', {
-      motDePasse1: motDePasse,
-      motDePasse2: motDePasse
-    })
-
-    expect(apiMock).toHaveBeenCalledWith({
-      motDePasse1: motDePasse,
-      motDePasse2: motDePasse
-    })
-    expect(actions.messageAdd).toHaveBeenCalledTimes(2)
-  })
-
-  test("retourne une erreur api dans la création du mot de passe de l'utilisateur", async () => {
-    const motDePasse1 = 'mignon'
-    const motDePasse2 = 'mignon'
-    const loginMock = jest.fn()
-    user.actions.login = loginMock
-    store = createStore({ modules: { user, map }, actions, mutations })
-    const apiMock = api.utilisateurMotDePasseInitialiser.mockRejectedValue(
-      new Error("erreur dans l'api")
-    )
-    const res = await store.dispatch('user/passwordInit', {
-      motDePasse1,
-      motDePasse2,
-      email
-    })
-
-    expect(apiMock).toHaveBeenCalledWith({ motDePasse1, motDePasse2 })
-    expect(actions.messageAdd).toHaveBeenCalled()
-    expect(loginMock).not.toHaveBeenCalled()
-    expect(res).toBeUndefined()
   })
 
   test("initialise les preferences de l'utilisateur", async () => {

@@ -115,11 +115,10 @@ async function createTitreWithEtapes(
 
 describe('titresONF', () => {
   test("teste la récupération des données pour l'ONF", async () => {
-    const tested = await restCall(
-      '/titresONF',
-      'admin',
-      ADMINISTRATION_IDS['OFFICE NATIONAL DES FORÊTS']
-    )
+    const tested = await restCall('/titresONF', {
+      role: 'admin',
+      administrationId: ADMINISTRATION_IDS['OFFICE NATIONAL DES FORÊTS']
+    })
 
     expect(tested.statusCode).toBe(200)
     expect(tested.body).toHaveLength(2)
@@ -136,11 +135,10 @@ describe('titresONF', () => {
 
 describe('titresPTMG', () => {
   test('teste la récupération des données pour le PTMG', async () => {
-    const tested = await restCall(
-      '/titresPTMG',
-      'admin',
-      ADMINISTRATION_IDS['PÔLE TECHNIQUE MINIER DE GUYANE']
-    )
+    const tested = await restCall('/titresPTMG', {
+      role: 'admin',
+      administrationId: ADMINISTRATION_IDS['PÔLE TECHNIQUE MINIER DE GUYANE']
+    })
 
     expect(tested.statusCode).toBe(200)
     expect(tested.body).toHaveLength(2)
@@ -156,11 +154,10 @@ describe('titresPTMG', () => {
 })
 describe('titresLiaisons', () => {
   test('peut lier deux titres', async () => {
-    const getTitres = await restCall(
-      '/titresONF',
-      'admin',
-      ADMINISTRATION_IDS['OFFICE NATIONAL DES FORÊTS']
-    )
+    const getTitres = await restCall('/titresONF', {
+      role: 'admin',
+      administrationId: ADMINISTRATION_IDS['OFFICE NATIONAL DES FORÊTS']
+    })
     const titreId = getTitres.body[0].id
 
     const axm = await titreCreate(
@@ -180,9 +177,11 @@ describe('titresLiaisons', () => {
     })
     const tested = await restPostCall(
       `/titres/${axm.id}/titreLiaisons`,
-      'admin',
-      [titreId],
-      ADMINISTRATION_IDS['OFFICE NATIONAL DES FORÊTS']
+      {
+        role: 'admin',
+        administrationId: ADMINISTRATION_IDS['OFFICE NATIONAL DES FORÊTS']
+      },
+      [titreId]
     )
 
     expect(tested.statusCode).toBe(200)
@@ -193,11 +192,10 @@ describe('titresLiaisons', () => {
       nom: getTitres.body[0].nom
     })
 
-    const avalTested = await restCall(
-      `/titres/${titreId}/titreLiaisons`,
-      'admin',
-      ADMINISTRATION_IDS['OFFICE NATIONAL DES FORÊTS']
-    )
+    const avalTested = await restCall(`/titres/${titreId}/titreLiaisons`, {
+      role: 'admin',
+      administrationId: ADMINISTRATION_IDS['OFFICE NATIONAL DES FORÊTS']
+    })
 
     expect(avalTested.statusCode).toBe(200)
     expect(avalTested.body.amont).toHaveLength(0)

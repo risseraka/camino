@@ -1,8 +1,7 @@
 import { journauxGet } from '../../../database/queries/journaux'
-import { userGet } from '../../../database/queries/utilisateurs'
-import { IToken } from '../../../types'
 import { GraphQLResolveInfo } from 'graphql'
 import { fieldsBuild } from './_fields-build'
+import { Context } from '../../../types'
 
 export interface IJournauxQueryParams {
   page: number
@@ -13,11 +12,10 @@ export interface IJournauxQueryParams {
 
 export const journaux = async (
   params: IJournauxQueryParams,
-  context: IToken,
+  { user }: Context,
   info: GraphQLResolveInfo
 ) => {
   try {
-    const user = await userGet(context.user?.id)
     const fields = fieldsBuild(info)
 
     const { results, total } = await journauxGet(

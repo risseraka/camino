@@ -2,10 +2,10 @@ import dateFormat from 'dateformat'
 import { GraphQLResolveInfo } from 'graphql'
 
 import {
+  Context,
   ITitre,
   ITitreActivite,
   ITitreActiviteColonneId,
-  IToken,
   IUtilisateur
 } from '../../../types'
 
@@ -24,10 +24,7 @@ import {
   titresActivitesCount,
   titresActivitesGet
 } from '../../../database/queries/titres-activites'
-import {
-  userGet,
-  utilisateursGet
-} from '../../../database/queries/utilisateurs'
+import { utilisateursGet } from '../../../database/queries/utilisateurs'
 
 import { titreActiviteInputValidate } from '../../../business/validations/titre-activite-input-validate'
 import { titreActiviteDeletionValidate } from '../../../business/validations/titre-activite-deletion-validate'
@@ -35,6 +32,7 @@ import { userSuper } from '../../../database/user-super'
 import { fichiersRepertoireDelete } from './_titre-document'
 import { documentsLier } from './documents'
 import { titreGet } from '../../../database/queries/titres'
+import { isBureauDEtudes, isEntreprise } from 'camino-common/src/roles'
 
 /**
  * Retourne une activité
@@ -48,11 +46,10 @@ import { titreGet } from '../../../database/queries/titres'
 
 const activite = async (
   { id }: { id: string },
-  context: IToken,
+  { user }: Context,
   info: GraphQLResolveInfo
 ) => {
   try {
-    const user = await userGet(context.user?.id)
     const fields = fieldsBuild(info)
 
     const titreActivite = await titreActiviteGet(id, { fields }, user)
@@ -125,11 +122,10 @@ const activites = async (
     titresDomainesIds?: string[] | null
     titresStatutsIds?: string[] | null
   },
-  context: IToken,
+  { user }: Context,
   info: GraphQLResolveInfo
 ) => {
   try {
-    const user = await userGet(context.user?.id)
     const fields = fieldsBuild(info)
 
     if (!intervalle) {
@@ -200,12 +196,10 @@ const activites = async (
 
 const activiteDeposer = async (
   { id }: { id: string },
-  context: IToken,
+  { user }: Context,
   info: GraphQLResolveInfo
 ) => {
   try {
-    const user = await userGet(context.user?.id)
-
     if (!user) throw new Error('droits insuffisants')
 
     const activite = await titreActiviteGet(
@@ -248,8 +242,12 @@ const activiteDeposer = async (
       userSuper
     )) as ITitre
 
+    const userEntreprisesId =
+      isEntreprise(user) || isBureauDEtudes(user)
+        ? user.entreprises.map(e => e.id)
+        : []
     const isAmodiataire = titre.amodiataires?.some(t =>
-      user.entreprises?.some(e => e.id === t.id)
+      userEntreprisesId.some(id => id === t.id)
     )
 
     const entrepriseIds = isAmodiataire
@@ -293,12 +291,10 @@ const activiteDeposer = async (
 
 const activiteModifier = async (
   { activite }: { activite: ITitreActivite & { documentIds?: string[] } },
-  context: IToken,
+  { user }: Context,
   info: GraphQLResolveInfo
 ) => {
   try {
-    const user = await userGet(context.user?.id)
-
     if (!user) throw new Error('droits insuffisants')
 
     const oldTitreActivite = await titreActiviteGet(
@@ -341,7 +337,7 @@ const activiteModifier = async (
 
     const documentIds = activite.documentIds || []
     await documentsLier(
-      context,
+      { user },
       documentIds,
       activite.id,
       'titreActiviteId',
@@ -362,9 +358,8 @@ const activiteModifier = async (
   }
 }
 
-const activiteSupprimer = async ({ id }: { id: string }, context: IToken) => {
+const activiteSupprimer = async ({ id }: { id: string }, { user }: Context) => {
   try {
-    const user = await userGet(context.user?.id)
     const oldTitreActivite = await titreActiviteGet(id, { fields: {} }, user)
 
     if (!oldTitreActivite) throw new Error("l'activité n'existe pas")

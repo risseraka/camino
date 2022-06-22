@@ -15,7 +15,7 @@ describe('statuts', () => {
   const metasQuery = queryImport('metas')
 
   test('peut voir tous les statuts', async () => {
-    const res = await graphQLCall(metasQuery, {}, 'super')
+    const res = await graphQLCall(metasQuery, {}, { role: 'super' })
 
     expect(res.body.data.statuts).toEqual([
       { id: 'dmi', nom: 'demande initiale', couleur: 'warning' },

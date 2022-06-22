@@ -1,9 +1,15 @@
-import { IFormat, Index, IUser } from '../types'
+import { IFormat, Index } from '../types'
 
 import express from 'express'
 import { join } from 'path'
 
-import { titre, titres, demarches, activites, entreprises } from '../api/rest'
+import {
+  activites,
+  demarches,
+  entreprises,
+  titre,
+  titres
+} from '../api/rest/index'
 import { etapeFichier, etapeTelecharger, fichier } from '../api/rest/fichiers'
 import {
   getTitreLiaisons,
@@ -19,11 +25,13 @@ import {
   manageNewsletterSubscription,
   utilisateurs
 } from '../api/rest/utilisateurs'
+import { logout, resetPassword } from '../api/rest/keycloak'
 import {
   getDGTMStats,
   getMinerauxMetauxMetropolesStats
 } from '../api/rest/statistiques'
 import { CaminoRestRoutes } from 'camino-common/src/rest'
+import { User } from 'camino-common/src/roles'
 const contentTypes = {
   csv: 'text/csv',
   geojson: 'application/geojson',
@@ -48,7 +56,7 @@ type IRestResolver = (
     params: Index<unknown>
     query: Index<unknown>
   },
-  userId?: string
+  user: User
 ) => Promise<IRestResolverResult | null>
 
 export const rest = express.Router()
@@ -58,6 +66,7 @@ type ExpressRoute = (
   res: express.Response,
   next: express.NextFunction
 ) => Promise<void>
+
 const restCatcher =
   (expressCall: ExpressRoute) =>
   async (
@@ -81,10 +90,12 @@ const restDownload =
     next: express.NextFunction
   ) => {
     try {
-      const user = req.user as unknown as IUser | undefined
+      // TODO 2022-10-12 mieux typer
+      const user = req.user as User
+
       const result = await resolver(
         { query: req.query, params: req.params },
-        user?.id
+        user
       )
 
       if (!result) {
@@ -154,11 +165,13 @@ rest.get('/entreprises', restDownload(entreprises))
 rest.get('/fichiers/:documentId', restDownload(fichier))
 rest.get('/etape/zip/:etapeId', restDownload(etapeTelecharger))
 rest.get('/etape/:etapeId/:fichierNom', restDownload(etapeFichier))
+rest.get('/deconnecter', restCatcher(logout))
+rest.get('/changerMotDePasse', restCatcher(resetPassword))
 
 rest.use(
   (
     err: Error,
-    req: express.Request,
+    _req: express.Request,
     res: express.Response,
     next: express.NextFunction
   ) => {

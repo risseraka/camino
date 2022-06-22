@@ -1,6 +1,6 @@
 import PureTitresLinkForm from './pure-titres-link-form.vue'
 import { Meta, Story } from '@storybook/vue3'
-import { User } from 'camino-common/src/roles'
+import { User, UserDefaut, UserSuper } from 'camino-common/src/roles'
 import { TitreTypeId } from 'camino-common/src/static/titresTypes'
 import { AdministrationId } from 'camino-common/src/static/administrations'
 import {
@@ -93,7 +93,7 @@ const linkTitres = () =>
 
 export const AxmWithAlreadySelectedTitre = Template.bind({})
 AxmWithAlreadySelectedTitre.args = {
-  user: { role: 'super', administrationId: undefined },
+  user: { role: 'super' } as UserSuper,
   titre: { typeId: 'axm', administrations: [], id: 'titreId', demarches: [] },
   loadLinkableTitres: () => () => Promise.resolve(linkableTitres),
   loadTitreLinks: () => Promise.resolve({ aval: titresTo, amont: titresFrom }),
@@ -102,7 +102,7 @@ AxmWithAlreadySelectedTitre.args = {
 
 export const FusionWithAlreadySelectedTitre = Template.bind({})
 FusionWithAlreadySelectedTitre.args = {
-  user: { role: 'super', administrationId: undefined },
+  user: { role: 'super' } as UserSuper,
   titre: {
     typeId: 'cxm',
     administrations: [],
@@ -116,7 +116,7 @@ FusionWithAlreadySelectedTitre.args = {
 
 export const TitreWithTitreLinksLoading = Template.bind({})
 TitreWithTitreLinksLoading.args = {
-  user: { role: 'super', administrationId: undefined },
+  user: { role: 'super' } as UserSuper,
   titre: { typeId: 'axm', administrations: [], id: 'titreId', demarches: [] },
   loadLinkableTitres: () => () => Promise.resolve(linkableTitres),
   loadTitreLinks: () => new Promise<TitreLinks>(() => ({})),
@@ -125,7 +125,7 @@ TitreWithTitreLinksLoading.args = {
 
 export const DefautCantUpdateLinks = Template.bind({})
 DefautCantUpdateLinks.args = {
-  user: { role: 'defaut', administrationId: undefined },
+  user: { role: 'defaut' } as UserDefaut,
   titre: { typeId: 'axm', administrations: [], id: 'titreId', demarches: [] },
   loadLinkableTitres: () => () => Promise.resolve(linkableTitres),
   loadTitreLinks: () => Promise.resolve({ aval: titresTo, amont: titresFrom }),

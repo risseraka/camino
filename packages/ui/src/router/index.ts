@@ -26,7 +26,6 @@ const MetaActivite = () => import('../components/meta-activite.vue')
 const Metas = () => import('../components/metas.vue')
 const Glossaire = () => import('../components/glossaire.vue')
 const Error = () => import('../components/error.vue')
-const UserPasswordInit = () => import('../components/user/password-init.vue')
 const UserAdd = () => import('../components/user/add.vue')
 const Contacts = () => import('../components/content/contacts.vue')
 const About = () => import('../components/content/about.vue')
@@ -213,20 +212,6 @@ const routes: RouteRecordRaw[] = [
     component: Cgu1
   },
   {
-    path: '/mot-de-passe',
-    name: 'mot-de-passe',
-    component: UserPasswordInit
-  },
-  {
-    path: '/email',
-    beforeEnter: to => {
-      store.dispatch('utilisateur/emailUpdate', {
-        emailToken: to.query.token
-      })
-    },
-    redirect: { name: 'homepage' }
-  },
-  {
     path: '/creation-de-compte',
     name: 'account-creation',
     component: UserAdd
@@ -296,20 +281,7 @@ router.isReady().then(async () => {})
 
 router.beforeEach(async (to, from, next) => {
   if (!store.getters['user/isLoaded']) {
-    const ticket = to.query.authentification === 'cerbere' && to.query.ticket
-
-    if (ticket) {
-      const query = { ...to.query }
-
-      delete query.ticket
-      delete query.authentification
-      delete query.TARGET
-
-      await router.replace({ query })
-      await store.dispatch('user/cerbereLogin', { ticket })
-    } else {
-      await store.dispatch('user/identify')
-    }
+    await store.dispatch('user/identify')
   }
   if (store.state.menu.component) {
     store.commit('menuClose')

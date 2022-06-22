@@ -1,6 +1,6 @@
 import { raw } from 'objection'
 
-import { IDocumentRepertoire, IFields, IUtilisateur } from '../../types'
+import { IFields, IDocumentRepertoire } from '../../types'
 
 import { knex } from '../../knex'
 
@@ -30,6 +30,7 @@ import Titres from '../models/titres'
 import { sortedDevises } from 'camino-common/src/static/devise'
 import { sortedDemarchesStatuts } from 'camino-common/src/static/demarchesStatuts'
 import { toDocuments } from 'camino-common/src/static/titresTypes_demarchesTypes_etapesTypes'
+import { User } from 'camino-common/src/roles'
 
 const titresTypesTypesGet = async () =>
   TitresTypesTypes.query().orderBy('ordre')
@@ -37,7 +38,7 @@ const titresTypesTypesGet = async () =>
 const domainesGet = async (
   _: never,
   { fields }: { fields?: IFields },
-  user: IUtilisateur | null | undefined
+  user: User
 ) => {
   const graph = fields
     ? graphBuild(fields, 'titre', fieldsFormat)
@@ -53,7 +54,7 @@ const domainesGet = async (
 const domaineGet = async (
   id: string,
   { fields }: { fields?: IFields },
-  user: IUtilisateur | null | undefined
+  user: User
 ) => {
   const graph = fields
     ? graphBuild(fields, 'titre', fieldsFormat)
@@ -127,7 +128,7 @@ const etapesTypesJustificatifsTypesGet = async () =>
 const demarchesTypesGet = async (
   { titreId, travaux }: { titreId?: string; travaux?: boolean },
   { fields }: { fields?: IFields },
-  user: IUtilisateur | null | undefined
+  user: User
 ) => {
   const graph = fields
     ? graphBuild(fields, 'demarchesTypes', fieldsFormat)
@@ -162,7 +163,7 @@ const demarchesTypesGet = async (
 const demarcheTypeGet = async (
   id: string,
   { titreId }: { titreId: string },
-  user: IUtilisateur | null | undefined
+  user: User
 ) => {
   const q = DemarchesTypes.query()
   demarchesTypesQueryModify(q, user, { titreId })
@@ -183,7 +184,7 @@ const etapesTypesGet = async (
     travaux?: boolean
   },
   { fields, uniqueCheck = true }: { fields?: IFields; uniqueCheck?: boolean },
-  user: IUtilisateur | null | undefined
+  user: User
 ) => {
   const graph = fields ? graphBuild(fields, 'etapesTypes', fieldsFormat) : []
 

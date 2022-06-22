@@ -1,18 +1,16 @@
 import {
-  userByEmailGet,
-  userGet,
   utilisateurGet,
   utilisateursGet
 } from '../../database/queries/utilisateurs'
 import express from 'express'
 import { CustomResponse } from './express-type'
-import { IFormat, IUser, IUtilisateursColonneId } from '../../types'
+import { IFormat, IUtilisateursColonneId } from '../../types'
 import { constants } from 'http2'
 import {
   isSubscribedToNewsLetter,
   newsletterSubscriberUpdate
 } from '../../tools/api-mailjet/newsletter'
-import { isRole } from 'camino-common/src/roles'
+import { isRole, User } from 'camino-common/src/roles'
 import { utilisateursFormatTable } from './format/utilisateurs'
 import { tableConvert } from './_convert'
 import { fileNameCreate } from '../../tools/file-name-create'
@@ -25,8 +23,7 @@ export const isSubscribedToNewsletter = async (
   req: express.Request<{ id?: string }>,
   res: CustomResponse<boolean>
 ) => {
-  const userId = (req.user as unknown as IUser | undefined)?.id
-  const user = await userGet(userId)
+  const user = req.user as User
 
   if (!req.params.id) {
     res.sendStatus(constants.HTTP_STATUS_FORBIDDEN)
@@ -50,8 +47,7 @@ export const manageNewsletterSubscription = async (
   req: express.Request<{ id?: string }>,
   res: CustomResponse<boolean>
 ) => {
-  const userId = (req.user as unknown as IUser | undefined)?.id
-  const user = await userGet(userId)
+  const user = req.user as User
 
   if (!req.params.id) {
     res.sendStatus(constants.HTTP_STATUS_FORBIDDEN)
@@ -88,13 +84,7 @@ export const generateQgisToken = async (
   req: express.Request,
   res: CustomResponse<QGISToken>
 ) => {
-  const userEmail = (req.user as unknown as IUser | undefined)?.email
-  if (!userEmail) {
-    res.sendStatus(constants.HTTP_STATUS_FORBIDDEN)
-
-    return
-  }
-  const user = await userByEmailGet(userEmail)
+  const user = req.user as User
 
   if (!user) {
     res.sendStatus(constants.HTTP_STATUS_FORBIDDEN)
@@ -102,7 +92,7 @@ export const generateQgisToken = async (
     const token = idGenerate()
     await knex('utilisateurs')
       .update({ qgis_token: bcrypt.hashSync(token, 10) })
-      .where('email', userEmail)
+      .where('email', user.email)
     res.send({ token })
   }
 }
@@ -132,10 +122,8 @@ export const utilisateurs = async (
       emails
     }
   }: { query: IUtilisateursQueryInput },
-  userId?: string
+  user: User
 ) => {
-  const user = await userGet(userId)
-
   const utilisateurs = await utilisateursGet(
     {
       colonne,

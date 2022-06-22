@@ -1,17 +1,13 @@
 import dateFormat from 'dateformat'
 
 import {
-  IToken,
   ITitreDemande,
   ITitreEtape,
   ISection,
   ITitreEntreprise,
+  Context,
   ISectionElement
 } from '../../../types'
-import {
-  userGet,
-  utilisateurTitreCreate
-} from '../../../database/queries/utilisateurs'
 import { titreDemandeEntreprisesGet } from '../../../database/queries/entreprises'
 import { domaineGet, etapeTypeGet } from '../../../database/queries/metas'
 import {
@@ -38,6 +34,7 @@ import { getLinkConfig } from 'camino-common/src/permissions/titres'
 import { checkTitreLinks } from '../../../business/validations/titre-links-validate'
 import { getEtapesStatuts } from 'camino-common/src/static/etapesTypesEtapesStatuts'
 import { EtapeTypeId } from 'camino-common/src/static/etapesTypes'
+import { utilisateurTitreCreate } from '../../../database/queries/utilisateurs'
 import { getDocuments } from 'camino-common/src/static/titresTypes_demarchesTypes_etapesTypes'
 import { getTitreTypeType } from 'camino-common/src/static/titresTypes'
 
@@ -45,11 +42,9 @@ export const titreDemandeCreer = async (
   {
     titreDemande
   }: { titreDemande: ITitreDemande & { titreFromIds?: string[] } },
-  context: IToken
+  { user }: Context
 ) => {
   try {
-    const user = await userGet(context.user?.id)
-
     if (
       !user ||
       (!isSuper(user) &&

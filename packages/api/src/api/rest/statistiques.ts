@@ -34,6 +34,7 @@ import {
   toDepartementId
 } from 'camino-common/src/static/departement'
 import { REGION_IDS } from 'camino-common/src/static/region'
+import { isAdministration } from 'camino-common/src/roles'
 
 const anneeDepartStats = 2015
 
@@ -47,7 +48,7 @@ export const getDGTMStats = async (
 
   const administrationId = ADMINISTRATION_IDS['DGTM - GUYANE']
 
-  if (user?.administrationId !== administrationId) {
+  if (!isAdministration(user) || user.administrationId !== administrationId) {
     res.sendStatus(constants.HTTP_STATUS_FORBIDDEN)
   } else {
     const result: StatistiquesDGTM = {

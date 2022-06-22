@@ -1,12 +1,11 @@
-import { IUtilisateur } from '../../types'
-
 import { titreEtapeUpdate } from '../../database/queries/titres-etapes'
 import { titreEtapesSortAscByDate } from '../utils/titre-etapes-sort'
 import { titresDemarchesGet } from '../../database/queries/titres-demarches'
 import { userSuper } from '../../database/user-super'
+import { UserNotNull } from 'camino-common/src/roles'
 
 export const titresEtapesOrdreUpdate = async (
-  user: IUtilisateur,
+  user: UserNotNull,
   titresDemarchesIds?: string[]
 ) => {
   console.info()

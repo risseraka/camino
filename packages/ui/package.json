@@ -6,7 +6,7 @@
   "scripts": {
     "build": "vue-tsc --noEmit && vite build --emptyOutDir",
     "predev": "find ../common/src -name '*.js*' -delete",
-    "dev": "vite",
+    "dev": "vite --host",
     "dev:update": "npm-check-updates && npm install && npm audit fix",
     "start": "node ./index.js",
     "test": "cross-env NODE_ENV=test && jest --verbose",

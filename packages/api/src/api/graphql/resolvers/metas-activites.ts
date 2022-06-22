@@ -1,8 +1,7 @@
 import { GraphQLResolveInfo } from 'graphql'
-import { IToken } from '../../../types'
+import { Context } from '../../../types'
 
 import { fieldsBuild } from './_fields-build'
-import { userGet } from '../../../database/queries/utilisateurs'
 import {
   activitesStatutsGet,
   activitesTypesDocumentsTypesGet,
@@ -14,7 +13,7 @@ import { isSuper } from 'camino-common/src/roles'
 
 const activitesTypes = async (
   _: never,
-  context: IToken,
+  _context: Context,
   info: GraphQLResolveInfo
 ) => {
   try {
@@ -40,10 +39,8 @@ const activitesStatuts = async () => {
   }
 }
 
-const activitesTypesTitresTypes = async (_: never, context: IToken) => {
+const activitesTypesTitresTypes = async (_: never, { user }: Context) => {
   try {
-    const user = await userGet(context.user?.id)
-
     if (!isSuper(user)) {
       throw new Error('droits insuffisants')
     }
@@ -58,10 +55,8 @@ const activitesTypesTitresTypes = async (_: never, context: IToken) => {
   }
 }
 
-const activitesTypesDocumentsTypes = async (_: never, context: IToken) => {
+const activitesTypesDocumentsTypes = async (_: never, { user }: Context) => {
   try {
-    const user = await userGet(context.user?.id)
-
     if (!isSuper(user)) {
       throw new Error('droits insuffisants')
     }
@@ -76,10 +71,8 @@ const activitesTypesDocumentsTypes = async (_: never, context: IToken) => {
   }
 }
 
-const activitesTypesPays = async (_: never, context: IToken) => {
+const activitesTypesPays = async (_: never, { user }: Context) => {
   try {
-    const user = await userGet(context.user?.id)
-
     if (!isSuper(user)) {
       throw new Error('droits insuffisants')
     }
