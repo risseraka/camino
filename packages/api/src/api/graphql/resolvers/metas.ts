@@ -3,7 +3,6 @@ import {
   IDemarcheStatut,
   IDemarcheType,
   IDocumentRepertoire,
-  IDocumentType,
   IEtapeType,
   IFields,
   IPhaseStatut,
@@ -19,9 +18,6 @@ import {
   demarchesTypesGet,
   demarcheTypeUpdate,
   devisesGet,
-  documentsTypesGet,
-  documentTypeCreate,
-  documentTypeUpdate,
   domainesGet,
   etapesTypesGet,
   etapeTypeUpdate,
@@ -73,6 +69,16 @@ import { Pays, PaysList } from 'camino-common/src/static/pays'
 import { Departement, Departements } from 'camino-common/src/static/departement'
 import { Region, Regions } from 'camino-common/src/static/region'
 import { EtapesStatuts } from 'camino-common/src/static/etapesStatuts'
+import {
+  DocumentsType,
+  DocumentsTypeId,
+  DocumentsTypes,
+  documentsTypes as docsTypes,
+  documentsTypesEntreprises
+} from 'camino-common/src/static/documentsTypes'
+import EtapesTypesJustificatifsTypes from '../../../database/models/etapes-types--justificatifs-types'
+import ActivitesTypesDocumentsTypes from '../../../database/models/activites-types--documents-types'
+import EtapesTypesDocumentsTypes from '../../../database/models/etapes-types--documents-types'
 
 export const devises = async () => devisesGet()
 
@@ -86,9 +92,47 @@ export const documentsTypes = async ({
 }: {
   repertoire: IDocumentRepertoire
   typeId?: string
-}) => {
+}): Promise<(DocumentsType & { optionnel?: boolean })[]> => {
   try {
-    return await documentsTypesGet({ repertoire, typeId })
+    if (!repertoire && !typeId) {
+      return docsTypes
+    }
+
+    const documentsTypesIds: {
+      documentTypeId: DocumentsTypeId
+      optionnel?: boolean
+    }[] = []
+
+    if (repertoire === 'entreprises') {
+      if (typeId) {
+        const etapeTypesJustificatifsTypes =
+          await EtapesTypesJustificatifsTypes.query().where(
+            'etapeTypeId',
+            typeId
+          )
+        documentsTypesIds.push(...etapeTypesJustificatifsTypes)
+      } else {
+        documentsTypesIds.push(
+          ...documentsTypesEntreprises.map(id => ({ documentTypeId: id }))
+        )
+      }
+    } else if (repertoire === 'activites' && typeId) {
+      const activiteTypesDocumentTypes =
+        await ActivitesTypesDocumentsTypes.query().where(
+          'activiteTypeId',
+          typeId
+        )
+      documentsTypesIds.push(...activiteTypesDocumentTypes)
+    } else if (repertoire === 'demarches' && typeId) {
+      const etapeTypesDocumentTypes =
+        await EtapesTypesDocumentsTypes.query().where('etapeTypeId', typeId)
+      documentsTypesIds.push(...etapeTypesDocumentTypes)
+    }
+
+    return documentsTypesIds.map(({ documentTypeId, optionnel }) => ({
+      ...DocumentsTypes[documentTypeId],
+      optionnel
+    }))
   } catch (e) {
     console.error(e)
 
@@ -565,47 +609,6 @@ export const etapeTypeModifier = async (
   }
 }
 
-export const documentTypeCreer = async (
-  { documentType }: { documentType: IDocumentType },
-  context: IToken
-) => {
-  try {
-    const user = await userGet(context.user?.id)
-
-    if (!isSuper(user)) {
-      throw new Error('droits insuffisants')
-    }
-
-    await documentTypeCreate(documentType)
-
-    return await documentsTypesGet({})
-  } catch (e) {
-    console.error(e)
-
-    throw e
-  }
-}
-
-export const documentTypeModifier = async (
-  { documentType }: { documentType: IDocumentType },
-  context: IToken
-) => {
-  try {
-    const user = await userGet(context.user?.id)
-
-    if (!isSuper(user)) {
-      throw new Error('droits insuffisants')
-    }
-
-    await documentTypeUpdate(documentType.id!, documentType)
-
-    return await documentsTypesGet({})
-  } catch (e) {
-    console.error(e)
-
-    throw e
-  }
-}
 export const referenceTypeModifier = async (
   { referenceType }: { referenceType: IReferenceType },
   context: IToken

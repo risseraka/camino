@@ -1,7 +1,6 @@
 import { Model, Pojo } from 'objection'
 
 import { IDocument } from '../../types'
-import DocumentsTypes from './documents-types'
 import TitresEtapes from './titres-etapes'
 import TitresActivites from './titres-activites'
 import Entreprises from './entreprises'
@@ -34,15 +33,6 @@ class Document extends Model {
   }
 
   static relationMappings = () => ({
-    type: {
-      relation: Model.BelongsToOneRelation,
-      modelClass: DocumentsTypes,
-      join: {
-        from: 'documents.typeId',
-        to: 'documentsTypes.id'
-      }
-    },
-
     etape: {
       relation: Model.HasOneRelation,
       modelClass: TitresEtapes,

@@ -1,15 +1,11 @@
-import { raw } from 'objection'
-
 import {
   IFields,
-  IDocumentRepertoire,
   ITitreTypeType,
   ITitreStatut,
   IDemarcheType,
   IDemarcheStatut,
   IPhaseStatut,
   IEtapeType,
-  IDocumentType,
   IReferenceType,
   ITitreType,
   ITitreTypeTitreStatut,
@@ -22,14 +18,11 @@ import {
   ITitreTypeDemarcheTypeEtapeTypeJustificatifType
 } from '../../types'
 
-import { knex } from '../../knex'
-
 import options from './_options'
 import graphBuild from './graph/build'
 import { fieldsFormat } from './graph/fields-format'
 
 import DemarchesTypes from '../models/demarches-types'
-import DocumentsTypes from '../models/documents-types'
 import DemarchesStatuts from '../models/demarches-statuts'
 import Domaines from '../models/domaines'
 import EtapesTypes from '../models/etapes-types'
@@ -54,12 +47,6 @@ import TitresTypesDemarchesTypesEtapesTypesDocumentsTypes from '../models/titres
 import TitresTypesDemarchesTypesEtapesTypesJustificatifsTypes from '../models/titres-types--demarches-types-etapes-types-justificatifs-types'
 import Titres from '../models/titres'
 import { sortedDevises } from 'camino-common/src/static/devise'
-
-const documentTypeCreate = async (documentType: IDocumentType) =>
-  DocumentsTypes.query().insertGraphAndFetch(documentType)
-
-const documentTypeUpdate = async (id: string, props: Partial<IDocumentType>) =>
-  DocumentsTypes.query().patchAndFetchById(id, props)
 
 const referenceTypeUpdate = async (
   id: string,
@@ -492,57 +479,6 @@ const etapeTypeUpdate = async (id: string, props: Partial<IEtapeType>) =>
 
 const devisesGet = () => sortedDevises
 
-const documentsTypesGet = async ({
-  repertoire,
-  typeId
-}: {
-  repertoire?: IDocumentRepertoire
-  typeId?: string
-}) => {
-  const q = DocumentsTypes.query().orderBy('nom')
-
-  q.select('documentsTypes.*')
-
-  if (repertoire) {
-    if (typeId && repertoire === 'activites') {
-      q.join('activitesTypes__documentsTypes as at_dt', b => {
-        b.on(knex.raw('?? = ?', ['at_dt.activiteTypeId', typeId]))
-        b.on(knex.raw('?? = ??', ['at_dt.documentTypeId', 'documentsTypes.id']))
-      })
-
-      q.select(raw('?? is true', ['at_dt.optionnel']).as('optionnel'))
-    } else if (typeId && repertoire === 'demarches') {
-      q.join('etapesTypes__documentsTypes as et_dt', b => {
-        b.on(knex.raw('?? = ?', ['et_dt.etapeTypeId', typeId]))
-        b.on(knex.raw('?? = ??', ['et_dt.documentTypeId', 'documentsTypes.id']))
-      })
-
-      q.select(raw('?? is true', ['et_dt.optionnel']).as('optionnel'))
-    } else if (repertoire === 'entreprises') {
-      if (typeId) {
-        q.join('etapesTypes__justificatifsTypes as et_jt', b => {
-          b.on(knex.raw('?? = ?', ['et_jt.etapeTypeId', typeId]))
-          b.on(
-            knex.raw('?? = ??', ['et_jt.documentTypeId', 'documentsTypes.id'])
-          )
-        })
-        q.select(raw('?? is true', ['et_jt.optionnel']).as('optionnel'))
-      } else {
-        q.join(
-          'entreprises__documentsTypes as e_dt',
-          'e_dt.documentTypeId',
-          'documentsTypes.id'
-        )
-      }
-    }
-  }
-
-  return q
-}
-
-const documentTypeGet = async (id: string) =>
-  DocumentsTypes.query().findById(id)
-
 const referencesTypesGet = async () => ReferencesTypes.query().orderBy('nom')
 
 export {
@@ -562,13 +498,9 @@ export {
   etapeTypeGet,
   etapeTypeUpdate,
   devisesGet,
-  documentsTypesGet,
-  documentTypeGet,
   referencesTypesGet,
   phasesStatutsGet,
   phaseStatutUpdate,
-  documentTypeCreate,
-  documentTypeUpdate,
   referenceTypeUpdate,
   titreTypeGet,
   titreTypeUpdate,

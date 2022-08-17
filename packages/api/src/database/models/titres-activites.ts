@@ -6,8 +6,8 @@ import ActivitesTypes from './activites-types'
 import Titres from './titres'
 import ActivitesStatuts from './activites-statuts'
 import Utilisateurs from './utilisateurs'
-import DocumentsTypes from './documents-types'
 import Document from './documents'
+import ActivitesTypesDocumentsTypes from './activites-types--documents-types'
 
 interface TitresActivites extends ITitreActivite {}
 
@@ -74,7 +74,7 @@ class TitresActivites extends Model {
 
     documentsTypes: {
       relation: Model.HasManyRelation,
-      modelClass: DocumentsTypes,
+      modelClass: ActivitesTypesDocumentsTypes,
       join: {
         from: 'titresActivites.typeId',
         to: 'activitesTypes__documentsTypes.activiteTypeId'

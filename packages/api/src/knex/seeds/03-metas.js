@@ -16,8 +16,6 @@ const titresTypes_demarchesTypes_etapesTypes = require('../../../sources/titres-
 const titresTypes_demarchesTypes_etapesTypes_documentsTypes = require('../../../sources/titres-types--demarches-types--etapes-types--documents-types.json')
 const etapesTypes_documentsTypes = require('../../../sources/etapes-types--documents-types.json')
 const etapesTypes_justificatifsTypes = require('../../../sources/etapes-types--justificatifs-types.json')
-const entreprises_documentsTypes = require('../../../sources/entreprises--documents-types.json')
-const documentsTypes = require('../../../sources/documents-types.json')
 const referencesTypes = require('../../../sources/references-types.json')
 
 const seed = (module.exports = seeding(async ({ insert }) => {
@@ -29,7 +27,6 @@ const seed = (module.exports = seeding(async ({ insert }) => {
     insert('demarchesTypes', demarchesTypes),
     insert('etapesTypes', etapesTypes),
     insert('demarchesStatuts', demarchesStatuts),
-    insert('documentsTypes', documentsTypes),
     insert('referencesTypes', referencesTypes)
   ])
   await Promise.all([insert('titresTypes', titresTypes)])
@@ -45,7 +42,6 @@ const seed = (module.exports = seeding(async ({ insert }) => {
       titresTypes_demarchesTypes_etapesTypes_documentsTypes
     ),
     insert('etapesTypes__documentsTypes', etapesTypes_documentsTypes),
-    insert('entreprises__documents_types', entreprises_documentsTypes),
     insert('etapesTypes__justificatifsTypes', etapesTypes_justificatifsTypes)
   ])
 }))

@@ -15,6 +15,7 @@ import { DemarcheTypeId } from 'camino-common/src/static/demarchesTypes'
 import { EtapeStatutId } from 'camino-common/src/static/etapesStatuts'
 import { Couleur } from 'camino-common/src/static/couleurs'
 import { EtapeTypeId } from 'camino-common/src/static/etapesTypes'
+import { DocumentsTypeId } from 'camino-common/src/static/documentsTypes'
 
 const DemarchesStatutsTypesIds = {
   Accepte: 'acc',
@@ -215,7 +216,7 @@ interface ISectionElement {
 
 interface IActiviteTypeDocumentType {
   activiteTypeId: string
-  documentTypeId: string
+  documentTypeId: DocumentsTypeId
   optionnel: boolean
 }
 
@@ -384,7 +385,7 @@ interface IEntrepriseTitreType {
 
 interface IEtapeTypeDocumentType {
   etapeTypeId: string
-  documentTypeId: string
+  documentTypeId: DocumentsTypeId
   optionnel?: boolean
 }
 

@@ -2,7 +2,8 @@ import { Model, Modifiers } from 'objection'
 
 import { IEtapeType } from '../../types'
 import AdministrationsTitresTypesEtapesTypes from './administrations-titres-types-etapes-types'
-import DocumentsTypes from './documents-types'
+import EtapesTypesDocumentsTypes from './etapes-types--documents-types'
+import EtapesTypesJustificatifsTypes from './etapes-types--justificatifs-types'
 
 interface EtapesTypes extends IEtapeType {}
 
@@ -40,36 +41,20 @@ class EtapesTypes extends Model {
     },
 
     documentsTypes: {
-      relation: Model.ManyToManyRelation,
-      modelClass: DocumentsTypes,
+      relation: Model.HasManyRelation,
+      modelClass: EtapesTypesDocumentsTypes,
       join: {
         from: 'etapesTypes.id',
-        through: {
-          from: 'etapesTypes__documentsTypes.etapeTypeId',
-          to: 'etapesTypes__documentsTypes.documentTypeId',
-          extra: {
-            optionnel: 'optionnel',
-            descriptionSpecifique: 'description'
-          }
-        },
-        to: 'documentsTypes.id'
+        to: 'etapesTypes__documentsTypes.etapeTypeId'
       }
     },
 
     justificatifsTypes: {
-      relation: Model.ManyToManyRelation,
-      modelClass: DocumentsTypes,
+      relation: Model.HasManyRelation,
+      modelClass: EtapesTypesJustificatifsTypes,
       join: {
         from: 'etapesTypes.id',
-        through: {
-          from: 'etapesTypes__justificatifsTypes.etapeTypeId',
-          to: 'etapesTypes__justificatifsTypes.documentTypeId',
-          extra: {
-            optionnel: 'optionnel',
-            descriptionSpecifique: 'description'
-          }
-        },
-        to: 'documentsTypes.id'
+        to: 'etapesTypes__justificatifsTypes.etapeTypeId'
       }
     }
   })

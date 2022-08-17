@@ -1,0 +1,25 @@
+exports.up = async knex => {
+  await knex('documents').where('type_id', 'rwp').update({ type_id: 'rgr' })
+  await knex('entreprises__documents_types')
+    .where('document_type_id', 'rwp')
+    .update({ document_type_id: 'rgr' })
+  await knex('activites_types__documents_types')
+    .where('document_type_id', 'rwp')
+    .update({ document_type_id: 'rgr' })
+  await knex('etapes_types__documents_types')
+    .where('document_type_id', 'rwp')
+    .update({ document_type_id: 'rgr' })
+  await knex('etapes_types__justificatifs_types')
+    .where('document_type_id', 'rwp')
+    .update({ document_type_id: 'rgr' })
+  await knex('titres_types__demarches_types__etapes_types__documents_types')
+    .where('document_type_id', 'rwp')
+    .update({ document_type_id: 'rgr' })
+  await knex('titres_types__demarches_types__etapes_types__justificatifs_t')
+    .where('document_type_id', 'rwp')
+    .update({ document_type_id: 'rgr' })
+
+  await knex('documents_types').where('id', 'rwp').delete()
+}
+
+exports.down = () => ({})

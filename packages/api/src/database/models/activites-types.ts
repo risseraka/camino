@@ -3,8 +3,8 @@ import { IActiviteType } from '../../types'
 import TitresTypes from './titres-types'
 import Frequences from './frequences'
 import Administrations from './administrations'
-import DocumentsTypes from './documents-types'
 import ActivitesTypesPays from './activites-types--pays'
+import ActivitesTypesDocumentsTypes from './activites-types--documents-types'
 
 interface ActivitesTypes extends IActiviteType {}
 
@@ -86,16 +86,11 @@ class ActivitesTypes extends Model {
     },
 
     documentsTypes: {
-      relation: Model.ManyToManyRelation,
-      modelClass: DocumentsTypes,
+      relation: Model.HasManyRelation,
+      modelClass: ActivitesTypesDocumentsTypes,
       join: {
         from: 'activitesTypes.id',
-        through: {
-          from: 'activitesTypes__documentsTypes.activiteTypeId',
-          to: 'activitesTypes__documentsTypes.documentTypeId',
-          extra: ['optionnel']
-        },
-        to: 'documentsTypes.id'
+        to: 'activitesTypes__documentsTypes.activiteTypeId'
       }
     }
   })

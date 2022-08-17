@@ -1,8 +1,9 @@
 import { Model } from 'objection'
 import { ITitreTypeDemarcheTypeEtapeType } from '../../types'
 import EtapesTypes from './etapes-types'
-import DocumentsTypes from './documents-types'
 import DemarchesTypes from './demarches-types'
+import TitresTypesDemarchesTypesEtapesTypesDocumentsTypes from './titres-types--demarches-types-etapes-types-documents-types'
+import TitresTypesDemarchesTypesEtapesTypesJustificatifsTypes from './titres-types--demarches-types-etapes-types-justificatifs-types'
 
 interface TitresTypesDemarchesTypesEtapesTypes
   extends ITitreTypeDemarcheTypeEtapeType {}
@@ -45,46 +46,28 @@ class TitresTypesDemarchesTypesEtapesTypes extends Model {
     },
 
     documentsTypes: {
-      relation: Model.ManyToManyRelation,
-      modelClass: DocumentsTypes,
+      relation: Model.HasManyRelation,
+      modelClass: TitresTypesDemarchesTypesEtapesTypesDocumentsTypes,
       join: {
         from: [
           'titresTypes__demarchesTypes__etapesTypes.titreTypeId',
           'titresTypes__demarchesTypes__etapesTypes.demarcheTypeId',
           'titresTypes__demarchesTypes__etapesTypes.etapeTypeId'
         ],
-        through: {
-          from: [
-            'titresTypes__demarchesTypes__etapesTypes__documentsTypes.titreTypeId',
-            'titresTypes__demarchesTypes__etapesTypes__documentsTypes.demarcheTypeId',
-            'titresTypes__demarchesTypes__etapesTypes__documentsTypes.etapeTypeId'
-          ],
-          to: 'titresTypes__demarchesTypes__etapesTypes__documentsTypes.documentTypeId',
-          extra: ['optionnel']
-        },
-        to: 'documentsTypes.id'
+        to: 'titresTypes__demarchesTypes__etapesTypes__documentsTypes.documentTypeId'
       }
     },
 
     justificatifsTypes: {
-      relation: Model.ManyToManyRelation,
-      modelClass: DocumentsTypes,
+      relation: Model.HasManyRelation,
+      modelClass: TitresTypesDemarchesTypesEtapesTypesJustificatifsTypes,
       join: {
         from: [
           'titresTypes__demarchesTypes__etapesTypes.titreTypeId',
           'titresTypes__demarchesTypes__etapesTypes.demarcheTypeId',
           'titresTypes__demarchesTypes__etapesTypes.etapeTypeId'
         ],
-        through: {
-          from: [
-            'titresTypes__demarchesTypes__etapesTypes__justificatifsT.titreTypeId',
-            'titresTypes__demarchesTypes__etapesTypes__justificatifsT.demarcheTypeId',
-            'titresTypes__demarchesTypes__etapesTypes__justificatifsT.etapeTypeId'
-          ],
-          to: 'titresTypes__demarchesTypes__etapesTypes__justificatifsT.documentTypeId',
-          extra: ['optionnel']
-        },
-        to: 'documentsTypes.id'
+        to: 'titresTypes__demarchesTypes__etapesTypes__justificatifsT.documentTypeId'
       }
     }
   })
