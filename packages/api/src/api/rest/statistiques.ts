@@ -20,11 +20,16 @@ import {
 } from 'camino-common/src/date'
 import { fromUniteFiscaleToUnite } from 'camino-common/src/static/unites'
 import { knex } from '../../knex'
+import { Pool } from 'pg'
+import { createPool, sql } from 'slonik'
+import { defineTable, uuid, text, integer, jsonb, defineDb } from '@ff00ff/mammoth';
+
 import { SDOMZoneId, SDOMZoneIds } from 'camino-common/src/static/sdom'
 import { userSuper } from '../../database/user-super'
 import { titresGet } from '../../database/queries/titres'
 import { TitresStatutIds } from 'camino-common/src/static/titresStatuts'
 import {
+SubstanceFiscaleId,
   SubstancesFiscale,
   SUBSTANCES_FISCALES_IDS
 } from 'camino-common/src/static/substancesFiscales'
@@ -34,6 +39,18 @@ import {
   toDepartementId
 } from 'camino-common/src/static/departement'
 import { REGION_IDS } from 'camino-common/src/static/region'
+import { z } from 'zod'
+import {
+  Kysely,
+  PostgresDialect,
+  Generated,
+  CamelCasePlugin,
+  ColumnType,
+  Selectable,
+  Insertable,
+  Updateable,
+  sql as ksql,
+} from 'kysely'
 
 const anneeDepartStats = 2015
 
@@ -409,6 +426,44 @@ const sels = [
   SUBSTANCES_FISCALES_IDS.sel_ChlorureDeSodium_extraitParAbattage
 ] as const
 type Sels = typeof sels[number]
+
+interface TitresActivitesContenu {
+  substancesFiscales?: { [key in SubstanceFiscaleId]?: number }
+}
+interface TitresActivitesTable {
+  id: Generated<string>
+  annee: CaminoAnnee
+  contenu: TitresActivitesContenu
+}
+
+interface Database {
+  titresActivites: TitresActivitesTable
+}
+
+
+const titreActivitesMammoth = defineTable({
+  id: text().notNull(),
+  annee: text<CaminoAnnee>(),
+  contenu: jsonb<TitresActivitesContenu>()
+})
+
+const pool = new Pool({
+          host: process.env.PGHOST,
+          port: Number(process.env.PGPORT),
+          user: process.env.PGUSER,
+          password: process.env.PGPASSWORD,
+          database: process.env.PGDATABASE
+        })
+
+const db = defineDb({ titreActivitesMammoth }, async (query, parameters) => {
+  const result = await pool.query(query, parameters);
+
+  return {
+    affectedCount: result.rowCount,
+    rows: result.rows,
+  };
+});
+
 export const getMinerauxMetauxMetropolesStats = async (
   _req: express.Request,
   res: CustomResponse<StatistiquesMinerauxMetauxMetropole>
@@ -445,12 +500,60 @@ export const getMinerauxMetauxMetropolesStats = async (
       statistiquesMinerauxMetauxMetropoleInstantBuild(titresMetropole)
 
     const bauxite = SUBSTANCES_FISCALES_IDS.bauxite
+    const pool = await createPool(`postgres://${process.env.PGUSER}:${process.env.PGPASSWORD}@${process.env.PGHOST}:${process.env.PGPORT}/${process.env.PGDATABASE}`);
+    const titresActivitesObject = z.object({
+      id: z.string(),
+      annee: z.string(),
+      // contenu: z
+    });
+    const resultSlonik = await pool.query(sql.type(titresActivitesObject)`SELECT 
+      annee, 
+      SUM((titres_activites.contenu->'substancesFiscales'-> ${bauxite})::int)
+      FROM titres_activites
+      WHERE titres_activites.contenu -> 'substancesFiscales' ? ${bauxite}
+      group by annee
+    `)
+
+    console.info(resultSlonik)
+
+
+    //  KYSELY
+    const db = new Kysely<Database>({
+      // Use MysqlDialect for MySQL and SqliteDialect for SQLite.
+      dialect: new PostgresDialect({
+        pool: new Pool({
+          host: process.env.PGHOST,
+          port: Number(process.env.PGPORT),
+          user: process.env.PGUSER,
+          password: process.env.PGPASSWORD,
+          database: process.env.PGDATABASE
+        }),
+        
+      }),
+      plugins: [new CamelCasePlugin()],
+    })
+
+   const plop =  await db.selectFrom('titresActivites')
+   .select('annee').select('contenu')
+   .where(ksql`titres_activites.contenu -> 'substancesFiscales' ? ${bauxite}`).executeTakeFirst()
+
+  //  sql<Person[]>`select * from person where id = ${id}`
+   if (plop) {
+    plop.annee
+   }
+  // FONCTIONNE PAS :(
+
+  const toto = await db
+  .select(db.titreActivitesMammoth.annee)
+  .from(db.titreActivitesMammoth)
+  .where(db.titreActivitesMammoth.contenu)
+
     const resultSubstances: { annee: CaminoAnnee; substance: number }[] =
       await knex
         .select(
           'annee',
           knex.raw(
-            "titres_activites.contenu->'substancesFiscales'-> ?  as substance",
+            "titres_activites.contenu->'substancesFiscales'-> ? as substance",
             bauxite
           )
         )

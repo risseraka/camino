@@ -136,8 +136,10 @@
     "nodemon": "^2.0.19",
     "npm-check-updates": "^16.0.5",
     "pg-escape": "^0.2.0",
+    "postguard": "^0.2.0",
     "prettier-eslint": "^15.0.1",
     "sql-formatter": "^9.2.0",
+    "squid": "^0.5.2",
     "standard-version": "^9.5.0",
     "supertest": "^6.2.4",
     "ts-jest": "^28.0.8"
