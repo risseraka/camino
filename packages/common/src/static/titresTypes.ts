@@ -54,3 +54,4 @@ export const TitresTypes: {
 } as const
 
 export const isTitreType = (titreType: string | undefined | null): titreType is TitreTypeId => TitresTypesIds.includes(titreType)
+export const existsTitreType = (titreTypeId: TitreTypeTypeId, domaineId: DomaineId): boolean => Object.values(TitresTypes).some( (tt) => tt.domaineId === domaineId && tt.typeId === titreTypeId)

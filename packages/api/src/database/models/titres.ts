@@ -4,7 +4,6 @@ import { ITitre } from '../../types'
 
 import Administrations from './administrations'
 import Communes from './communes'
-import Domaines from './domaines'
 import Entreprises from './entreprises'
 import TitresDemarches from './titres-demarches'
 import TitresEtapes from './titres-etapes'
@@ -55,12 +54,6 @@ class Titres extends Model {
   }
 
   static relationMappings = () => ({
-    domaine: {
-      relation: Model.BelongsToOneRelation,
-      modelClass: Domaines,
-      join: { from: 'titres.domaineId', to: 'domaines.id' }
-    },
-
     type: {
       relation: Model.BelongsToOneRelation,
       modelClass: Types,

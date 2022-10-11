@@ -33,7 +33,6 @@ export const tables = [
   { name: 'demarches_types', orderBy: ['id'] },
   { name: 'documents', orderBy: ['id'] },
   { name: 'documents_types', orderBy: ['id'] },
-  { name: 'domaines', orderBy: ['id'] },
   { name: 'entreprises', orderBy: ['id'] },
   { name: 'entreprises__documents_types', orderBy: ['document_type_id'] },
   { name: 'entreprises_etablissements', orderBy: ['id'] },

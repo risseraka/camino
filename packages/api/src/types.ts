@@ -316,15 +316,6 @@ interface IDocumentType {
   descriptionSpecifique?: string | null
 }
 
-interface IDomaine {
-  id: string
-  nom: string
-  description?: string
-  ordre: number
-  titresTypes: ITitreType[]
-  titresCreation: boolean
-}
-
 interface IEntrepriseEtablissement {
   id: string
   entrepriseId: string
@@ -514,7 +505,6 @@ interface ITitre {
   slug?: string
   nom: string
   domaineId: DomaineId
-  domaine?: IDomaine | null
   typeId: TitreTypeId
   type?: ITitreType | null
   titreStatutId?: TitreStatutId | null
@@ -769,7 +759,7 @@ interface ICache {
 
 interface ITitreType {
   id: string
-  domaineId: string
+  domaineId: DomaineId
   typeId: TitreTypeTypeId
   archive?: boolean | null
   type: ITitreTypeType
@@ -887,7 +877,6 @@ export {
   IDemarcheType,
   IDocumentType,
   IDocumentRepertoire,
-  IDomaine,
   IEntreprise,
   IEntrepriseEtablissement,
   IEntrepriseTitreType,

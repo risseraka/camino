@@ -108,7 +108,7 @@ const titreFormat = (t: ITitre, fields: IFields = titreFormatFields) => {
     t = {
       titreStatutId: t.titreStatutId,
       type: t.type,
-      domaine: t.domaine,
+      domaineId: t.domaineId,
       points: t.points
     } as ITitre
   }

@@ -3,7 +3,6 @@ import { Model, Modifiers } from 'objection'
 import { ITitreType } from '../../types'
 
 import TitresTypesTitresStatuts from './titres-types--titres-statuts'
-import Domaines from './domaines'
 import DemarchesTypes from './demarches-types'
 import TitresTypesTypes from './titres-types-types'
 
@@ -32,15 +31,6 @@ class TitresTypes extends Model {
       join: {
         from: 'titresTypes.typeId',
         to: 'titresTypesTypes.id'
-      }
-    },
-
-    domaine: {
-      relation: Model.BelongsToOneRelation,
-      modelClass: Domaines,
-      join: {
-        from: 'titresTypes.domaineId',
-        to: 'domaines.id'
       }
     },
 

@@ -7,7 +7,6 @@ import { knex } from '../../../knex'
 // import { format } from 'sql-formatter'
 
 import AdministrationsTitresTypes from '../../models/administrations-titres-types'
-import Domaines from '../../models/domaines'
 import TitresTypes from '../../models/titres-types'
 import DemarchesTypes from '../../models/demarches-types'
 import EtapesTypes from '../../models/etapes-types'
@@ -118,20 +117,6 @@ const titresTypesQueryModify = (
   } else {
     q.select(raw('false').as('titresCreation'))
   }
-}
-
-const domainesQueryModify = (
-  q: QueryBuilder<Domaines, Domaines | Domaines[] | undefined>,
-  user: IUtilisateur | null | undefined
-) => {
-  q.select('domaines.*')
-
-  q.modifyGraph('titresTypes', b => {
-    titresTypesQueryModify(
-      b as QueryBuilder<TitresTypes, TitresTypes | TitresTypes[]>,
-      user
-    )
-  })
 }
 
 const etapesTypesQueryModify = (
@@ -282,7 +267,6 @@ const demarchesTypesQueryModify = (
 
 export {
   demarchesTypesQueryModify,
-  domainesQueryModify,
   administrationsEtapesTypesPropsQuery,
   entreprisesEtapesTypesPropsQuery,
   etapesTypesQueryModify,

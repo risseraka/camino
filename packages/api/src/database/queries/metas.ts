@@ -10,13 +10,11 @@ import { fieldsFormat } from './graph/fields-format'
 
 import DemarchesTypes from '../models/demarches-types'
 import DocumentsTypes from '../models/documents-types'
-import Domaines from '../models/domaines'
 import EtapesTypes from '../models/etapes-types'
 import TitresTypesTypes from '../models/titres-types-types'
 
 import {
   demarchesTypesQueryModify,
-  domainesQueryModify,
   etapesTypesQueryModify
 } from './permissions/metas'
 
@@ -35,37 +33,6 @@ import { sortedDemarchesStatuts } from 'camino-common/src/static/demarchesStatut
 const titresTypesTypesGet = async () =>
   TitresTypesTypes.query().orderBy('ordre')
 
-const domainesGet = async (
-  _: never,
-  { fields }: { fields?: IFields },
-  user: IUtilisateur | null | undefined
-) => {
-  const graph = fields
-    ? graphBuild(fields, 'titre', fieldsFormat)
-    : options.domaines.graph
-
-  const q = Domaines.query().withGraphFetched(graph).orderBy('ordre')
-
-  domainesQueryModify(q, user)
-
-  return q
-}
-
-const domaineGet = async (
-  id: string,
-  { fields }: { fields?: IFields },
-  user: IUtilisateur | null | undefined
-) => {
-  const graph = fields
-    ? graphBuild(fields, 'titre', fieldsFormat)
-    : options.domaines.graph
-
-  const q = Domaines.query().withGraphFetched(graph).findById(id)
-
-  domainesQueryModify(q, user)
-
-  return q
-}
 
 const titresTypesGet = async (_: never, { fields }: { fields?: IFields }) => {
   const graph = fields
@@ -284,8 +251,6 @@ const documentTypeGet = async (id: string) =>
   DocumentsTypes.query().findById(id)
 
 export {
-  domaineGet,
-  domainesGet,
   titresTypesTypesGet,
   titresTypesGet,
   demarchesTypesGet,
