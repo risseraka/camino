@@ -301,6 +301,7 @@ export const toFiscalite = (
 
   return fiscalite
 }
+
 type Reduced =
   | { guyane: true; fiscalite: FiscaliteGuyane }
   | { guyane: false; fiscalite: FiscaliteFrance }

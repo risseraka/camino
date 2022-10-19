@@ -185,6 +185,12 @@ Default.args = {
         instructionExploration: 11,
         valCxm: 19,
         valPrm: 3
+      },
+      fiscaliteParSubstanceParAnnee: {
+        aloh: {
+          [valideAnnee('2021')]: 1_224_000,
+          [valideAnnee('2022')]: 1_250_000
+        }
       }
     })
 }

@@ -54,6 +54,12 @@ export interface StatistiquesDGTM {
 
 export type StatistiquesMinerauxMetauxMetropoleSels = { [key in CaminoAnnee]: { [key in RegionId]?: number } }
 
+export type FiscaliteParSubstanceParAnnee = {
+  [SUBSTANCES_FISCALES_IDS.bauxite]: Record<CaminoAnnee, number>
+  // [SUBSTANCES_FISCALES_IDS.sel_ChlorureDeSodiumContenu_]: Record<CaminoAnnee, number>
+  // [SUBSTANCES_FISCALES_IDS.sel_ChlorureDeSodium_extraitEnDissolutionParSondage]: Record<CaminoAnnee, number>
+  // [SUBSTANCES_FISCALES_IDS.sel_ChlorureDeSodium_extraitParAbattage]: Record<CaminoAnnee, number>
+}
 export interface StatistiquesMinerauxMetauxMetropole {
   surfaceExploration: number
   surfaceExploitation: number
@@ -69,4 +75,5 @@ export interface StatistiquesMinerauxMetauxMetropole {
     [SUBSTANCES_FISCALES_IDS.sel_ChlorureDeSodium_extraitEnDissolutionParSondage]: StatistiquesMinerauxMetauxMetropoleSels
     [SUBSTANCES_FISCALES_IDS.sel_ChlorureDeSodium_extraitParAbattage]: StatistiquesMinerauxMetauxMetropoleSels
   }
+  fiscaliteParSubstanceParAnnee: FiscaliteParSubstanceParAnnee
 }

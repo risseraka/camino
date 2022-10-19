@@ -6,6 +6,7 @@ import { ITitre, IUser } from '../../types'
 import { constants } from 'http2'
 import { TitreTypeId } from 'camino-common/src/static/titresTypes'
 import {
+  FiscaliteParSubstanceParAnnee,
   StatistiquesDGTM,
   StatistiquesMinerauxMetauxMetropole,
   StatistiquesMinerauxMetauxMetropoleSels
@@ -34,6 +35,11 @@ import {
   toDepartementId
 } from 'camino-common/src/static/departement'
 import { REGION_IDS } from 'camino-common/src/static/region'
+import {
+  apiOpenfiscaCalculate,
+  OpenfiscaRequest
+} from '../../tools/api-openfisca'
+import { toFiscalite } from './entreprises'
 
 const anneeDepartStats = 2015
 
@@ -389,7 +395,10 @@ const statistiquesMinerauxMetauxMetropoleInstantBuild = (
         instructionExploitation: 0,
         valCxm: 0
       },
-      substances: { aloh: {}, nacc: {}, naca: {}, nacb: {} }
+      substances: { aloh: {}, nacc: {}, naca: {}, nacb: {} },
+      fiscaliteParSubstanceParAnnee: {
+        aloh: {}
+      }
     }
   )
 
@@ -645,10 +654,71 @@ export const getMinerauxMetauxMetropolesStats = async (
 
     result.substances = { ...result.substances, ...selsStats }
 
+    result.fiscaliteParSubstanceParAnnee = await fiscalite()
+
     res.json(result)
   } catch (e) {
     console.error(e)
 
     throw e
   }
+}
+
+const fiscalite = async (): Promise<FiscaliteParSubstanceParAnnee> => {
+  const result: {
+    categorie: 'pme' | 'autre'
+    annee: CaminoAnnee
+    sum: number
+  }[] = await knex.raw(`
+    select case when e_t.categorie = 'PME' then 'pme' else 'autre' end as categorie, ta.annee,sum((ta.contenu->'substancesFiscales'->'aloh')::int)
+    from titres_activites ta  
+    join titres t on t.id = ta.titre_id 
+    left join titres_titulaires tt on t.props_titre_etapes_ids ->> 'titulaires' = tt.titre_etape_id
+    left join entreprises e_t on e_t.id  = tt.entreprise_id
+    where ta.contenu->'substancesFiscales' \\? 'aloh'
+    group by case when e_t.categorie = 'PME' then 'pme' else 'autre' end, ta.annee
+    `)
+
+  const body: OpenfiscaRequest = {
+    articles: {
+      articlepme: {
+        surface_communale: {
+          '2020': 1
+        },
+        quantite_bauxite_kt: {
+          '2020': 129999
+        },
+        redevance_communale_des_mines_bauxite: {
+          '2021': null
+        },
+        redevance_departementale_des_mines_bauxite: {
+          '2021': null
+        }
+      }
+    },
+    titres: {
+      pme: {
+        commune_principale_exploitation: {
+          '2020': '66666'
+        },
+        surface_totale: {
+          '2020': 1
+        },
+        categorie: {
+          '2020': 'pme'
+        },
+        articles: ['articlepme']
+      }
+    },
+    communes: {
+      '66666': {
+        articles: ['articlepme']
+      }
+    }
+  }
+  const fiscaliteResult = await apiOpenfiscaCalculate(body)
+  const fiscalite2022 = toFiscalite(fiscaliteResult, 'articlepme', 2021)
+  console.log('plop', fiscalite2022)
+
+  return { aloh: {} }
 }
